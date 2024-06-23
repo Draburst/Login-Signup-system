@@ -1,5 +1,8 @@
 from database import User, Transaction, session
+import colorama
+from colorama import Fore, Style
 
+colorama.init()
 
 def get_transaction_by_user(username):
     user = session.query(User).filter_by(username=username).first()
@@ -7,7 +10,17 @@ def get_transaction_by_user(username):
         print(f'Succes!\nIts your transaction:')
         transactions = user.transactions
         for transaction in transactions:
-            print(f'\n\tID:{transaction.id}\n\tAMOUNT:{transaction.amount},\t')
+            print(
+            f"{Fore.GREEN}\n"
+            "\t+------------------------------------------+\n"
+            f"\t| {Fore.YELLOW}ID:{Fore.WHITE} {transaction.id:<36} |\n"
+            "\t+------------------------------------------+\n"
+            f"\t| {Fore.YELLOW}AMOUNT:{Fore.WHITE} {transaction.amount:<32} |\n"
+            "\t+------------------------------------------+\n"
+            f"\t| {Fore.YELLOW}CATEGORY:{Fore.WHITE} {transaction.category:<30} |\n"
+            "\t+------------------------------------------+\n"
+            f"{Style.RESET_ALL}"
+            )
     else:
         return print(f'Not found name {username}')
 
@@ -27,6 +40,11 @@ def create_transaction(username, amount, category):
     except Exception as error:
         print(f'This is error: {error}')
 
+def is_user_admin(username):
+    user = session.query(User).filter_by(username=username).first()
+    if user and user.is_admin:
+        return True
+    return False
 
 def delete_user(id):
     user = session.query(User).filter_by(id=id).first()
@@ -54,9 +72,9 @@ def get_user_info(username):
     else:
         return print(f'User with username "{username}" not found.')
 
-def add_user(name, password):
+def add_user(name, password, is_admin):
     try:
-        user = User(username=name, password=password)
+        user = User(username=name, password=password, is_admin=is_admin)
         session.add(user)
         session.commit()
         if user:
